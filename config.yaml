@@ -21,6 +21,7 @@ exclude:
   - "head of"
   - "engineering manager"
   - "10+ years"
+  - "unity catalog"   # Databricks data term, not the game engine
 
 # Only used by generic remote boards that let us pre-filter by tag/category.
 remoteok_tags:
@@ -57,6 +58,8 @@ studios:
     - manticoregames    # 0 open
     - wooga             # 2  (added 2026-06-17)
     - housemarque       # 1  (added 2026-06-17, Returnal)
+    - metacore          # 0 open (added 2026-06-18, Merge Mansion)
+    - pocketgems        # 0 open (added 2026-06-18, mobile games)
   lever:
     - dreamgames        # 18
     - kabam             # 15
@@ -65,6 +68,8 @@ studios:
     - immutable         # 2 (web3)
     - theorycraftgames  # 1
     - avalanchestudios  # 16 (added 2026-06-17, Just Cause)
+    - easybrain         # 9  (added 2026-06-18, Sudoku.com)
+    - mistplay          # 5  (added 2026-06-18, mobile gaming)
   ashby:
     - voodoo            # 123
     - supercell         # 37
@@ -73,11 +78,19 @@ studios:
     - seconddinner      # 1 (Marvel Snap)
     - niantic           # 0 open (Pokémon GO)
     - improbable        # 5  (added 2026-06-17)
+    - moonactive        # 0 open (added 2026-06-18, Coin Master)
 
 # Only keep REMOTE jobs. Remote-only boards (RemoteOK, WWR, Jobicy, Remotive,
-# Himalayas) always pass; studio/HN/Arbeitnow roles must say "remote" in the
-# location or title. Set false to also get onsite/hybrid roles.
+# Himalayas) always pass; studio/HN/aggregator roles must contain a remote term
+# (remote/anywhere/distributed/wfh/worldwide/global). Set false for onsite/hybrid too.
 remote_only: true
+
+# Countries queried on the Adzuna aggregator (only used if ADZUNA_APP_ID/KEY set).
+# 2-letter codes: gb, us, in, au, ca, de, etc.
+adzuna_countries:
+  - gb
+  - us
+  - in
 
 # Max age (days) to keep a job in the "already-seen" store before pruning.
 seen_retention_days: 60

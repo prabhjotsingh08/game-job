@@ -8,12 +8,14 @@ from ..config import Config
 from ..job import Job
 from ..schedule import SourceState
 from . import (
+    adzuna,
     arbeitnow,
     ashby,
     greenhouse,
     hackernews,
     himalayas,
     jobicy,
+    jooble,
     lever,
     remoteok,
     remotive,
@@ -21,8 +23,12 @@ from . import (
 )
 
 # Generic boards always run; studio boards only run if configured.
-# Order doesn't matter; rate-limited sources self-gate via MIN_INTERVAL_HOURS.
-_GENERIC = [remoteok, weworkremotely, arbeitnow, jobicy, hackernews, remotive, himalayas]
+# Order doesn't matter; rate-limited sources self-gate via MIN_INTERVAL_HOURS, and
+# aggregators (adzuna/jooble) no-op until their API keys are set.
+_GENERIC = [
+    remoteok, weworkremotely, arbeitnow, jobicy, hackernews, remotive, himalayas,
+    adzuna, jooble,
+]
 
 
 def collect_all(cfg: Config, state: SourceState) -> list[Job]:

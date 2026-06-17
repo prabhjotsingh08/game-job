@@ -21,6 +21,7 @@ class Config:
         self.ashby = studios.get("ashby") or []
         self.seen_retention_days = int(data.get("seen_retention_days", 60))
         self.remote_only = bool(data.get("remote_only", True))
+        self.adzuna_countries = data.get("adzuna_countries") or ["gb", "us", "in"]
 
     # Secrets come from the environment (GitHub Actions secrets / local .env).
     @property
@@ -54,6 +55,27 @@ class Config:
     @property
     def discord_enabled(self) -> bool:
         return bool(self.discord_webhook)
+
+    # --- aggregator API keys (sources no-op when absent) ---
+    @property
+    def adzuna_app_id(self) -> str:
+        return os.environ.get("ADZUNA_APP_ID", "").strip()
+
+    @property
+    def adzuna_app_key(self) -> str:
+        return os.environ.get("ADZUNA_APP_KEY", "").strip()
+
+    @property
+    def adzuna_enabled(self) -> bool:
+        return bool(self.adzuna_app_id and self.adzuna_app_key)
+
+    @property
+    def jooble_key(self) -> str:
+        return os.environ.get("JOOBLE_API_KEY", "").strip()
+
+    @property
+    def jooble_enabled(self) -> bool:
+        return bool(self.jooble_key)
 
 
 def load_config() -> Config:

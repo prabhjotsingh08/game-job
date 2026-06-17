@@ -22,16 +22,22 @@ sources ─▶ fetch ─▶ keyword filter ─▶ dedup (seen.json) ─▶ Teleg
 | Himalayas | JSON API | remote roles, pre-searched for Unity (every 24h) |
 | Hacker News "Who is hiring" | HN API | monthly thread, indie/startups |
 | Greenhouse / Lever / Ashby | JSON API | **specific studio boards you add** — jobs land here first |
+| Adzuna | JSON API | aggregator (Indeed-style), needs free key (every 6h) |
+| Jooble | JSON API | aggregator, needs free key (every 24h) |
 
 **Strict Unity:** `config.yaml` keywords are set to Unity-only (`unity`, `unity3d`,
 `unity developer`, `unity engineer`) so you only get roles that actually name Unity.
 Widen by adding terms (e.g. `gameplay programmer`, `game developer`) for more volume.
 
+**Remote-only:** `remote_only: true` keeps only remote roles. A job counts as remote if
+its location/title (or body, for HN/aggregators) contains remote/anywhere/distributed/
+wfh/worldwide/global. Onsite & hybrid are dropped. Set `false` in `config.yaml` to include them.
+
 **Source cadence (rate limits):** most sources are polled every run (~15 min). Remotive
-asks for ≤4 calls/day and Himalayas caches for 24h, so the bot self-throttles them
-(6h / 24h) using `source_state.json`, which is committed back each run like `seen.json`.
-Reddit and Hitmarker were evaluated but dropped — Reddit blocks datacenter IPs (GitHub
-Actions) with `403`, and Hitmarker has no public API.
+(≤4/day), Himalayas (24h cache), and the aggregators self-throttle (Remotive 6h, Himalayas
+24h, Adzuna 6h, Jooble 24h) via `source_state.json`, committed back each run like `seen.json`.
+Reddit and Hitmarker were dropped — Reddit blocks datacenter IPs (GitHub Actions) with
+`403`, and Hitmarker has no public API.
 
 ## Notifications you can get
 
@@ -90,6 +96,19 @@ Get the same alerts in a Discord channel. No bot to host:
 3. Set `DISCORD_WEBHOOK_URL` to that URL.
 
 Jobs arrive as tidy clickable embeds (batched up to 10 per message).
+
+## 1d. (Optional) More volume — Adzuna + Jooble aggregators (free keys)
+
+These aggregate listings from across the web (Indeed-style coverage). They stay **off**
+until their keys are set, then self-throttle (Adzuna 6h, Jooble 24h) to respect free quotas.
+
+- **Adzuna:** register at https://developer.adzuna.com → get **app id** + **app key** →
+  set `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`. Countries queried are in `config.yaml`
+  (`adzuna_countries`, default `gb, us, in`).
+- **Jooble:** register at https://jooble.org/api/about → get an **API key** →
+  set `JOOBLE_API_KEY`.
+
+Both are queried for "unity developer"; the strict-Unity + remote filters still apply.
 
 ## 2. Test locally (optional but recommended)
 
@@ -151,6 +170,7 @@ These are the exact gotchas to get it running on Windows PowerShell:
    - Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
    - WhatsApp: `WHATSAPP_PHONE` (with country code), `WHATSAPP_APIKEY` (from CallMeBot)
    - Discord: `DISCORD_WEBHOOK_URL`
+   - (optional) Adzuna: `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` · Jooble: `JOOBLE_API_KEY`
 3. **Actions** tab → enable workflows → open **job-alerts** → **Run workflow**
    to test immediately. After that it runs automatically every 15 minutes.
 

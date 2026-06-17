@@ -23,11 +23,13 @@ def _hit(terms: tuple[str, ...], text: str) -> bool:
     return any(_pattern(t).search(text) for t in terms)
 
 
-# Sources whose body text is trustworthy signal, so we match against it too.
-# Only HackerNews: each "who is hiring" comment IS one job post. Generic boards
-# (and Remotive/Himalayas, which already pre-search for Unity) stay title/tags-only
-# — body-matching them lets "Unity Catalog" (a Databricks data term) etc. slip in.
-BODY_MATCH_SOURCES = {"HackerNews"}
+# Sources whose body text is trustworthy signal, so we match against it (for both the
+# Unity keyword and the remote check):
+# - HackerNews: each "who is hiring" comment IS one job post.
+# - Adzuna/Jooble: aggregators queried with "unity developer"; they return a city
+#   location (no remote flag), so unity+remote signal lives in the description.
+# "unity catalog" is in config exclude to kill the Databricks false positive this opens.
+BODY_MATCH_SOURCES = {"HackerNews", "Adzuna", "Jooble"}
 
 # Sources to match on TITLE ONLY (ignore tags). Remotive attaches huge kitchen-sink
 # tag lists (e.g. an agency "Data Scientist" tagged with 'unity' for Databricks Unity
@@ -53,12 +55,20 @@ def matches(job: Job, cfg: Config) -> bool:
 REMOTE_ONLY_SOURCES = {"RemoteOK", "WeWorkRemotely", "Jobicy", "Remotive", "Himalayas"}
 
 
+# Any of these in location/title (or body for body-match sources) marks a job remote.
+REMOTE_TERMS = (
+    "remote", "anywhere", "distributed", "wfh", "work from home", "work-from-home",
+    "worldwide", "global", "fully remote", "remote-first",
+)
+
+
 def is_remote(job: Job) -> bool:
     """True if the job is remote. Remote-only boards always pass; mixed sources
-    (studios, HN, Arbeitnow) must say 'remote' in location/title (or body for HN)."""
+    (studios, HN, aggregators) must contain a remote term in location/title
+    (or body for body-match sources)."""
     if job.source in REMOTE_ONLY_SOURCES:
         return True
     text = f"{job.location} {job.title}".lower()
     if job.source in BODY_MATCH_SOURCES:
         text += " " + job.description.lower()
-    return "remote" in text  # also catches "remotely", "fully remote", "remote-first"
+    return any(term in text for term in REMOTE_TERMS)

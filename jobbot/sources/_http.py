@@ -14,3 +14,13 @@ def get_json(url: str, timeout: int = 25, headers: dict | None = None):
     resp = requests.get(url, headers=h, timeout=timeout)
     resp.raise_for_status()
     return resp.json()
+
+
+def post_json(url: str, payload: dict, timeout: int = 25, headers: dict | None = None):
+    h = dict(HEADERS)
+    h["Content-Type"] = "application/json"
+    if headers:
+        h.update(headers)
+    resp = requests.post(url, json=payload, headers=h, timeout=timeout)
+    resp.raise_for_status()
+    return resp.json()
