@@ -16,7 +16,7 @@ except (AttributeError, ValueError):
 
 from jobbot import discord, telegram, whatsapp
 from jobbot.config import load_config
-from jobbot.filters import matches
+from jobbot.filters import is_remote, matches
 from jobbot.schedule import SourceState
 from jobbot.sources import collect_all
 from jobbot.store import SeenStore
@@ -44,6 +44,8 @@ def main() -> None:
     seen_this_run: set[str] = set()
     for job in all_jobs:
         if not matches(job, cfg):
+            continue
+        if cfg.remote_only and not is_remote(job):
             continue
         uid = job.uid
         if uid in seen_this_run or not store.is_new(uid):

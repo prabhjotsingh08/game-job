@@ -20,6 +20,7 @@ class Config:
         self.lever = studios.get("lever") or []
         self.ashby = studios.get("ashby") or []
         self.seen_retention_days = int(data.get("seen_retention_days", 60))
+        self.remote_only = bool(data.get("remote_only", True))
 
     # Secrets come from the environment (GitHub Actions secrets / local .env).
     @property

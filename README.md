@@ -165,6 +165,9 @@ repo each run, so you never get duplicates and rate-limited sources stay throttl
 - **`keywords`** — a job is kept if its title/tags/description contains ANY of these.
   Add/remove to widen or narrow. Start broad, then trim noisy terms.
 - **`exclude`** — drop roles you can't apply to (e.g. `principal`, `director`).
+- **`remote_only`** — `true` keeps only remote roles. Remote-only boards always pass;
+  studio/HN roles must say "remote" in location/title (onsite/hybrid are dropped). Set
+  `false` to include onsite/hybrid.
 - **`seen_retention_days`** — how long a job stays "seen" before it could re-alert.
 
 ## Adding game studios (highest-value step) — `config.yaml` → `studios`

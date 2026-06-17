@@ -74,5 +74,10 @@ studios:
     - niantic           # 0 open (Pokémon GO)
     - improbable        # 5  (added 2026-06-17)
 
+# Only keep REMOTE jobs. Remote-only boards (RemoteOK, WWR, Jobicy, Remotive,
+# Himalayas) always pass; studio/HN/Arbeitnow roles must say "remote" in the
+# location or title. Set false to also get onsite/hybrid roles.
+remote_only: true
+
 # Max age (days) to keep a job in the "already-seen" store before pruning.
 seen_retention_days: 60

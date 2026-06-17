@@ -46,3 +46,19 @@ def matches(job: Job, cfg: Config) -> bool:
     if _hit(tuple(cfg.exclude), text):
         return False
     return _hit(tuple(cfg.keywords), text)
+
+
+# Boards that ONLY list remote jobs — every result is remote by definition, even if
+# the location field names a country (e.g. Himalayas shows allowed countries).
+REMOTE_ONLY_SOURCES = {"RemoteOK", "WeWorkRemotely", "Jobicy", "Remotive", "Himalayas"}
+
+
+def is_remote(job: Job) -> bool:
+    """True if the job is remote. Remote-only boards always pass; mixed sources
+    (studios, HN, Arbeitnow) must say 'remote' in location/title (or body for HN)."""
+    if job.source in REMOTE_ONLY_SOURCES:
+        return True
+    text = f"{job.location} {job.title}".lower()
+    if job.source in BODY_MATCH_SOURCES:
+        text += " " + job.description.lower()
+    return "remote" in text  # also catches "remotely", "fully remote", "remote-first"
