@@ -1,0 +1,57 @@
+"""Send job alerts to a Discord channel via a free Incoming Webhook.
+
+Setup (one time):
+  1. In Discord: Server Settings -> Integrations -> Webhooks -> New Webhook.
+  2. Pick the channel, click "Copy Webhook URL".
+  3. Set DISCORD_WEBHOOK_URL to that URL.
+No bot hosting and no cost — Discord just accepts POSTs to the webhook.
+"""
+from __future__ import annotations
+
+import time
+
+import requests
+
+from .job import Job
+
+# Discord allows up to 10 embeds per message; batching keeps us well under
+# the webhook rate limit (~30 requests/min).
+EMBEDS_PER_MESSAGE = 10
+COLOR = 0x00B4D8  # Unity-ish cyan
+
+
+def _embed(job: Job) -> dict:
+    loc = f" · {job.location}" if job.location else ""
+    return {
+        "title": job.title[:256] or "(untitled role)",
+        "url": job.url,
+        "description": f"🏢 {job.company}{loc}"[:4096],
+        "color": COLOR,
+        "footer": {"text": f"via {job.source}"},
+    }
+
+
+def send_jobs(jobs: list[Job], webhook_url: str) -> int:
+    """Post jobs as batched embeds. Returns count successfully delivered."""
+    sent = 0
+    batches = [
+        jobs[i : i + EMBEDS_PER_MESSAGE]
+        for i in range(0, len(jobs), EMBEDS_PER_MESSAGE)
+    ]
+    for bi, batch in enumerate(batches):
+        payload = {"embeds": [_embed(j) for j in batch]}
+        try:
+            resp = requests.post(webhook_url, json=payload, timeout=20)
+            if resp.status_code == 429:
+                retry_after = float(resp.json().get("retry_after", 2))
+                time.sleep(retry_after + 0.5)
+                resp = requests.post(webhook_url, json=payload, timeout=20)
+            if resp.ok:
+                sent += len(batch)
+            else:
+                print(f"  ! Discord send failed ({resp.status_code}): {resp.text[:200]}")
+        except requests.RequestException as e:
+            print(f"  ! Discord error: {e}")
+        if bi < len(batches) - 1:
+            time.sleep(1)  # be polite between batch posts
+    return sent

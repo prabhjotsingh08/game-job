@@ -1,0 +1,78 @@
+# ---------------------------------------------------------------------------
+# Job-alert bot configuration
+# Edit this file to tune what jobs you get notified about and where they come from.
+# ---------------------------------------------------------------------------
+
+# A job is kept if a whole-word match for ANY of these appears in its title/tags
+# (and, for HN/Remotive/Himalayas, the body too). STRICT UNITY mode: only roles
+# that actually name Unity. To widen (more volume, some non-Unity game roles),
+# add back terms like "gameplay programmer", "game developer", "c# game".
+keywords:
+  - unity
+  - unity3d
+  - unity developer
+  - unity engineer
+
+# If a job title/description contains ANY of these, it is dropped even if a
+# keyword matched. Use to cut roles you can't / won't apply to.
+exclude:
+  - principal
+  - director
+  - "head of"
+  - "engineering manager"
+  - "10+ years"
+
+# Only used by generic remote boards that let us pre-filter by tag/category.
+remoteok_tags:
+  - unity
+  - game-dev
+  - game
+
+# Game studios' official job boards. These often post BEFORE LinkedIn.
+# The value is the board "token" in the studio's careers URL.
+#   Greenhouse: https://boards.greenhouse.io/<token>  -> use <token>
+#   Lever:      https://jobs.lever.co/<token>          -> use <token>
+#   Ashby:      https://jobs.ashbyhq.com/<token>        -> use <token>
+# IMPORTANT: verify each token works (see README "Adding studios"). Bad tokens
+# are skipped with a warning, they won't crash the run.
+studios:
+  # Verified live against each ATS on 2026-06-17 (open-job count at the time
+  # in comments). Boards marked "0 open" are valid but had no postings then —
+  # kept because these studios hire often and they'll populate automatically.
+  greenhouse:
+    - roblox            # 227
+    - scopely           # 179
+    - riotgames         # 165
+    - epicgames         # 147
+    - rockstargames     # 77
+    - krafton           # 65 (PUBG)
+    - tripledotstudios  # 58
+    - peak              # 47 (Peak Games)
+    - taketwo           # 32 (Take-Two)
+    - naughtydog        # 20
+    - wildlifestudios   # 16
+    - bungie            # 1
+    - hoyoverse         # 0 open
+    - mediatonic        # 0 open (Fall Guys)
+    - manticoregames    # 0 open
+    - wooga             # 2  (added 2026-06-17)
+    - housemarque       # 1  (added 2026-06-17, Returnal)
+  lever:
+    - dreamgames        # 18
+    - kabam             # 15
+    - jamcity           # 6
+    - animocabrands     # 6 (web3)
+    - immutable         # 2 (web3)
+    - theorycraftgames  # 1
+    - avalanchestudios  # 16 (added 2026-06-17, Just Cause)
+  ashby:
+    - voodoo            # 123
+    - supercell         # 37
+    - thatgamecompany   # 27 (Journey, Sky)
+    - skymavis          # 6 (Axie Infinity)
+    - seconddinner      # 1 (Marvel Snap)
+    - niantic           # 0 open (Pokémon GO)
+    - improbable        # 5  (added 2026-06-17)
+
+# Max age (days) to keep a job in the "already-seen" store before pruning.
+seen_retention_days: 60
