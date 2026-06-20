@@ -31,9 +31,12 @@ def _embed(job: Job) -> dict:
     }
 
 
-def send_jobs(jobs: list[Job], webhook_url: str) -> int:
-    """Post jobs as batched embeds. Returns count successfully delivered."""
-    sent = 0
+def send_jobs(jobs: list[Job], webhook_url: str) -> list[Job]:
+    """Post jobs as batched embeds. Returns the jobs successfully delivered.
+
+    Embeds go out per-batch, so a failed batch means none of its jobs are delivered.
+    """
+    delivered: list[Job] = []
     batches = [
         jobs[i : i + EMBEDS_PER_MESSAGE]
         for i in range(0, len(jobs), EMBEDS_PER_MESSAGE)
@@ -47,11 +50,11 @@ def send_jobs(jobs: list[Job], webhook_url: str) -> int:
                 time.sleep(retry_after + 0.5)
                 resp = requests.post(webhook_url, json=payload, timeout=20)
             if resp.ok:
-                sent += len(batch)
+                delivered.extend(batch)
             else:
                 print(f"  ! Discord send failed ({resp.status_code}): {resp.text[:200]}")
         except requests.RequestException as e:
             print(f"  ! Discord error: {e}")
         if bi < len(batches) - 1:
             time.sleep(1)  # be polite between batch posts
-    return sent
+    return delivered

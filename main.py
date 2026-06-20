@@ -68,21 +68,27 @@ def main() -> None:
             "Discord (DISCORD_WEBHOOK_URL)."
         )
 
+    # A job counts as delivered if ANY enabled channel sent it. Only delivered jobs
+    # are marked seen, so a send/network failure leaves the job to retry next run
+    # instead of being silently lost.
+    delivered_uids: set[str] = set()
     if fresh:
         if cfg.telegram_enabled:
-            sent = telegram.send_jobs(fresh, cfg.telegram_token, cfg.telegram_chat_id)
-            print(f"Telegram: sent {sent}/{len(fresh)}")
+            done = telegram.send_jobs(fresh, cfg.telegram_token, cfg.telegram_chat_id)
+            print(f"Telegram: sent {len(done)}/{len(fresh)}")
+            delivered_uids.update(j.uid for j in done)
         if cfg.whatsapp_enabled:
-            sent = whatsapp.send_jobs(fresh, cfg.whatsapp_phone, cfg.whatsapp_apikey)
-            print(f"WhatsApp: sent {sent}/{len(fresh)}")
+            done = whatsapp.send_jobs(fresh, cfg.whatsapp_phone, cfg.whatsapp_apikey)
+            print(f"WhatsApp: sent {len(done)}/{len(fresh)}")
+            delivered_uids.update(j.uid for j in done)
         if cfg.discord_enabled:
-            sent = discord.send_jobs(fresh, cfg.discord_webhook)
-            print(f"Discord: sent {sent}/{len(fresh)}")
+            done = discord.send_jobs(fresh, cfg.discord_webhook)
+            print(f"Discord: sent {len(done)}/{len(fresh)}")
+            delivered_uids.update(j.uid for j in done)
 
-    # Mark everything we matched as seen (even if a send failed, to avoid spam loops
-    # we only mark what we attempted; adjust if you'd rather retry failures).
     for job in fresh:
-        store.mark(job.uid)
+        if job.uid in delivered_uids:
+            store.mark(job.uid)
     store.prune(cfg.seen_retention_days)
     store.save()
     source_state.save()

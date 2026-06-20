@@ -9,6 +9,16 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "config.yaml"
 
+# Load secrets from a local .env for local runs. No-op when the file is absent
+# (e.g. GitHub Actions, where secrets arrive as real env vars), and never
+# overrides values already set in the environment.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(ROOT / ".env")
+except ImportError:  # python-dotenv optional; env vars still work without it
+    pass
+
 
 class Config:
     def __init__(self, data: dict):

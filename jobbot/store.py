@@ -6,6 +6,7 @@ commits this file back to the repo after each run.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -42,6 +43,10 @@ class SeenStore:
         self._data = kept
 
     def save(self) -> None:
-        self.path.write_text(
+        # Atomic write: a kill mid-write must not corrupt seen.json (a truncated file
+        # would parse-fail on next load, reset to {}, and re-alert everything).
+        tmp = self.path.with_suffix(self.path.suffix + ".tmp")
+        tmp.write_text(
             json.dumps(self._data, indent=0, sort_keys=True), encoding="utf-8"
         )
+        os.replace(tmp, self.path)

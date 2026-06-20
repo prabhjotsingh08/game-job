@@ -31,23 +31,42 @@ def _hit(terms: tuple[str, ...], text: str) -> bool:
 # "unity catalog" is in config exclude to kill the Databricks false positive this opens.
 BODY_MATCH_SOURCES = {"HackerNews", "Adzuna", "Jooble"}
 
+# Studio / ATS source families (named "Family/<token>") whose job DESCRIPTIONS are
+# trustworthy Unity signal — a studio's title is often "Gameplay Programmer" while only
+# the JD names Unity. We scan their body for the INCLUDE keyword (and for the remote
+# check), but NOT for excludes (see matches()), so JD boilerplate can't false-drop a role.
+STUDIO_FAMILIES = {"Greenhouse", "Lever", "Ashby", "Recruitee", "Workable"}
+
 # Sources to match on TITLE ONLY (ignore tags). Remotive attaches huge kitchen-sink
 # tag lists (e.g. an agency "Data Scientist" tagged with 'unity' for Databricks Unity
 # Catalog) — title-only keeps real "Unity Developer" posts and drops that noise.
 TITLE_ONLY_SOURCES = {"Remotive"}
 
 
+def _family(source: str) -> str:
+    return source.split("/", 1)[0]
+
+
+def _scans_body(source: str) -> bool:
+    """True if the description is reliable signal for this source (aggregators/HN and
+    every studio/ATS board)."""
+    return source in BODY_MATCH_SOURCES or _family(source) in STUDIO_FAMILIES
+
+
 def matches(job: Job, cfg: Config) -> bool:
     if job.source in TITLE_ONLY_SOURCES:
-        text = job.title.lower()
+        base = job.title.lower()
     else:
-        text = job.match_text()
-    if job.source in BODY_MATCH_SOURCES:
-        text = text + " " + job.description.lower()
+        base = job.match_text()
+    full = base + (" " + job.description.lower() if _scans_body(job.source) else "")
 
-    if _hit(tuple(cfg.exclude), text):
+    # Exclude scans the body ONLY for aggregator/HN sources (keeps the "unity catalog"
+    # Databricks guard). For studios/ATS the exclude stays on title+tags, so JD boilerplate
+    # like "report to the Principal Engineer" / "10+ years preferred" can't drop a real role.
+    excl_text = full if job.source in BODY_MATCH_SOURCES else base
+    if _hit(tuple(cfg.exclude), excl_text):
         return False
-    return _hit(tuple(cfg.keywords), text)
+    return _hit(tuple(cfg.keywords), full)
 
 
 # Boards that ONLY list remote jobs — every result is remote by definition, even if
@@ -69,6 +88,7 @@ def is_remote(job: Job) -> bool:
     if job.source in REMOTE_ONLY_SOURCES:
         return True
     text = f"{job.location} {job.title}".lower()
-    if job.source in BODY_MATCH_SOURCES:
+    if _scans_body(job.source):
         text += " " + job.description.lower()
-    return any(term in text for term in REMOTE_TERMS)
+    # Whole-word match (like matches()) so "global" doesn't fire inside "globalization".
+    return _hit(REMOTE_TERMS, text)

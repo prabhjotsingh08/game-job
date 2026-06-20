@@ -24,45 +24,33 @@ def _format(job: Job) -> str:
     )
 
 
-def send_jobs(jobs: list[Job], token: str, chat_id: str) -> int:
-    """Send each job as its own message. Returns count successfully sent."""
+def send_jobs(jobs: list[Job], token: str, chat_id: str) -> list[Job]:
+    """Send each job as its own message. Returns the jobs successfully delivered."""
     if not token or not chat_id:
         raise RuntimeError(
             "TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set in environment."
         )
     url = API.format(token=token)
-    sent = 0
+    delivered: list[Job] = []
     for job in jobs:
+        payload = {
+            "chat_id": chat_id,
+            "text": _format(job),
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }
         try:
-            resp = requests.post(
-                url,
-                json={
-                    "chat_id": chat_id,
-                    "text": _format(job),
-                    "parse_mode": "HTML",
-                    "disable_web_page_preview": True,
-                },
-                timeout=20,
-            )
+            resp = requests.post(url, json=payload, timeout=20)
             if resp.status_code == 429:
                 # Respect Telegram rate limiting and retry once.
                 retry_after = resp.json().get("parameters", {}).get("retry_after", 3)
                 time.sleep(retry_after + 1)
-                resp = requests.post(
-                    url,
-                    json={
-                        "chat_id": chat_id,
-                        "text": _format(job),
-                        "parse_mode": "HTML",
-                        "disable_web_page_preview": True,
-                    },
-                    timeout=20,
-                )
+                resp = requests.post(url, json=payload, timeout=20)
             if resp.ok:
-                sent += 1
+                delivered.append(job)
             else:
                 print(f"  ! Telegram send failed ({resp.status_code}): {resp.text[:200]}")
             time.sleep(0.5)  # stay under ~1 msg/sec to the same chat
         except requests.RequestException as e:
             print(f"  ! Telegram error: {e}")
-    return sent
+    return delivered

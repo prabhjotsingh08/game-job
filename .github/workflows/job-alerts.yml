@@ -50,5 +50,7 @@ jobs:
             echo "No state changes"
           else
             git commit -m "chore: update bot state [skip ci]"
+            # Rebase onto any divergent remote so the push can't fail fast-forward.
+            git pull --rebase --autostash
             git push
           fi

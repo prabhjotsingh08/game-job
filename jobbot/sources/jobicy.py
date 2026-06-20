@@ -5,8 +5,8 @@ from ..config import Config
 from ..job import Job
 from ._http import get_json
 
-# count=50 keeps payload reasonable; the bot polls frequently so this is plenty.
-URL = "https://jobicy.com/api/v2/remote-jobs?count=50"
+# tag=unity narrows to Unity roles; count=100 for more coverage per poll.
+URL = "https://jobicy.com/api/v2/remote-jobs?count=100&tag=unity"
 
 
 def fetch(cfg: Config) -> list[Job]:

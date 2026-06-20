@@ -33,9 +33,9 @@ def _format(job: Job) -> str:
     )
 
 
-def send_jobs(jobs: list[Job], phone: str, apikey: str) -> int:
-    """Send each job as a WhatsApp message. Returns count successfully sent."""
-    sent = 0
+def send_jobs(jobs: list[Job], phone: str, apikey: str) -> list[Job]:
+    """Send each job as a WhatsApp message. Returns the jobs successfully delivered."""
+    delivered: list[Job] = []
     for i, job in enumerate(jobs):
         try:
             resp = requests.get(
@@ -44,11 +44,11 @@ def send_jobs(jobs: list[Job], phone: str, apikey: str) -> int:
                 timeout=30,
             )
             if resp.ok and "ERROR" not in resp.text.upper():
-                sent += 1
+                delivered.append(job)
             else:
                 print(f"  ! WhatsApp send failed ({resp.status_code}): {resp.text[:200]}")
         except requests.RequestException as e:
             print(f"  ! WhatsApp error: {e}")
         if i < len(jobs) - 1:
             time.sleep(DELAY_SECONDS)
-    return sent
+    return delivered

@@ -9,7 +9,7 @@ from ..config import Config
 from ..job import Job
 from ._http import get_json
 
-URL = "https://remotive.com/api/remote-jobs?search=unity&limit=50"
+URL = "https://remotive.com/api/remote-jobs?search=unity&limit=100"
 MIN_INTERVAL_HOURS = 6
 
 

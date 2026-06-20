@@ -16,6 +16,12 @@ def fetch(cfg: Config) -> list[Job]:
     jobs: list[Job] = []
     for feed_url in FEEDS:
         parsed = feedparser.parse(feed_url)
+        # feedparser never raises: a network/HTTP failure surfaces as bozo=1 with an
+        # empty entry list. Raise so collect_all logs it instead of silently yielding 0.
+        status = parsed.get("status")
+        if parsed.bozo and not parsed.entries:
+            exc = parsed.get("bozo_exception")
+            raise RuntimeError(f"feed fetch failed for {feed_url} (status={status}): {exc}")
         for e in parsed.entries:
             # WWR titles look like "Company: Job Title"
             raw = e.get("title", "")

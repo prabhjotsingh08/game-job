@@ -26,6 +26,7 @@ exclude:
 # Only used by generic remote boards that let us pre-filter by tag/category.
 remoteok_tags:
   - unity
+  - unity3d
   - game-dev
   - game
 
@@ -91,6 +92,9 @@ adzuna_countries:
   - gb
   - us
   - in
+  - ca
+  - au
+  - de
 
 # Max age (days) to keep a job in the "already-seen" store before pruning.
 seen_retention_days: 60

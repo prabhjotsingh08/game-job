@@ -12,7 +12,7 @@ from ..job import Job
 from ._http import get_json
 
 TMPL = (
-    "http://api.adzuna.com/v1/api/jobs/{country}/search/1"
+    "https://api.adzuna.com/v1/api/jobs/{country}/search/1"
     "?app_id={app_id}&app_key={app_key}&what={what}"
     "&results_per_page=50&content-type=application/json"
 )

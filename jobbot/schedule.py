@@ -6,6 +6,7 @@ by the workflow like seen.json. Fast sources use interval 0 (always due).
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -40,6 +41,10 @@ class SourceState:
         self._data[name] = datetime.now(timezone.utc).isoformat()
 
     def save(self) -> None:
-        self.path.write_text(
+        # Atomic write (see store.SeenStore.save) so an interrupted run can't corrupt
+        # source_state.json.
+        tmp = self.path.with_suffix(self.path.suffix + ".tmp")
+        tmp.write_text(
             json.dumps(self._data, indent=0, sort_keys=True), encoding="utf-8"
         )
+        os.replace(tmp, self.path)
