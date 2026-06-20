@@ -3,15 +3,25 @@
 # Edit this file to tune what jobs you get notified about and where they come from.
 # ---------------------------------------------------------------------------
 
-# A job is kept if a whole-word match for ANY of these appears in its title/tags
-# (and, for HN/Remotive/Himalayas, the body too). STRICT UNITY mode: only roles
-# that actually name Unity. To widen (more volume, some non-Unity game roles),
-# add back terms like "gameplay programmer", "game developer", "c# game".
+# STRICT UNITY-DEVELOPER mode. A job is kept ONLY when its TITLE contains BOTH a Unity
+# keyword below AND a role term from `role_terms`. Title-only on purpose: studio job
+# descriptions almost always mention Unity, so matching the body floods you with non-dev
+# roles (UX Designer, Data Engineer, etc.). To widen, add keywords or role_terms.
 keywords:
   - unity
   - unity3d
   - unity developer
   - unity engineer
+
+# The title must also name one of these role types, so artists/designers/managers/recruiters
+# are dropped even when the title says "Unity". Add e.g. "gameplay", "client", "engine" to
+# widen toward more game-eng roles.
+role_terms:
+  - developer
+  - engineer
+  - programmer
+  - dev
+  - coder
 
 # If a job title/description contains ANY of these, it is dropped even if a
 # keyword matched. Use to cut roles you can't / won't apply to.

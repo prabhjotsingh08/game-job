@@ -6,7 +6,7 @@ from jobbot.job import Job
 
 def _cfg(**over):
     data = {
-        "keywords": ["unity", "unity developer"],
+        "keywords": ["unity", "unity3d", "unity developer"],
         "exclude": ["principal", "unity catalog"],
     }
     data.update(over)
@@ -37,36 +37,53 @@ def test_unity_catalog_excluded():
     assert not matches(job, _cfg())
 
 
-def test_body_match_source_uses_description():
-    # HackerNews matches against the body; non-body source with same data does not.
+def test_description_is_ignored_for_matching():
+    # Strict title-only: Unity in the body must NOT pull in a non-Unity title, any source.
     hn = Job(title="hiring", company="x", url="", source="HackerNews",
-             description="We use Unity for our game.")
+             description="We use Unity for our game, hiring a developer.")
     other = Job(title="hiring", company="x", url="", source="RemoteOK",
                 description="We use Unity for our game.")
-    assert matches(hn, _cfg())
+    assert not matches(hn, _cfg())
     assert not matches(other, _cfg())
 
 
-def test_title_only_source_ignores_tags():
-    # Remotive matches title only; a "unity" tag must not pull in a non-Unity title.
-    job = Job(title="Data Scientist", company="x", url="", source="Remotive",
+def test_tags_are_ignored_for_matching():
+    # A "unity" tag must not pull in a non-Unity title.
+    job = Job(title="Data Scientist", company="x", url="", source="RemoteOK",
               tags=["unity", "databricks"])
     assert not matches(job, _cfg())
 
 
-def test_studio_matches_unity_in_description_only():
-    # Title doesn't name Unity, but the JD does -> studio body scan should match.
+def test_studio_unity_only_in_description_does_not_match():
+    # Title doesn't name Unity (only the JD does) -> strict rule drops it.
     job = Job(title="Gameplay Programmer", company="riotgames", url="",
               source="Greenhouse/riotgames", description="You'll build in Unity all day.")
-    assert matches(job, _cfg())
+    assert not matches(job, _cfg())
 
 
-def test_studio_exclude_stays_narrow_ignores_jd_boilerplate():
-    # "principal" appears only in JD boilerplate; studio exclude scans title+tags only,
-    # so a real Unity role is NOT dropped.
+def test_studio_unity_developer_title_matches():
+    # A studio role whose TITLE names Unity + a dev term is kept.
     job = Job(title="Unity Developer", company="acme", url="", source="Lever/acme",
               description="You'll report to the Principal Engineer.")
     assert matches(job, _cfg(keywords=["unity"], exclude=["principal"]))
+
+
+def test_unity_non_dev_role_dropped():
+    # "Unity" present but the role is not a developer/engineer role -> dropped.
+    for t in ("Unity Artist", "Unity Technical Designer", "Unity Community Manager"):
+        job = Job(title=t, company="x", url="", source="RemoteOK")
+        assert not matches(job, _cfg()), t
+
+
+def test_dev_role_without_unity_dropped():
+    job = Job(title="Software Engineer", company="x", url="", source="RemoteOK")
+    assert not matches(job, _cfg())
+
+
+def test_unity_engineer_and_unity3d_programmer_match():
+    for t in ("Senior Unity Engineer", "Unity3D Programmer", "Remote Unity Developer"):
+        job = Job(title=t, company="x", url="", source="RemoteOK")
+        assert matches(job, _cfg()), t
 
 
 def test_studio_remote_from_description():

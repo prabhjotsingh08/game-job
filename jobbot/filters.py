@@ -54,19 +54,17 @@ def _scans_body(source: str) -> bool:
 
 
 def matches(job: Job, cfg: Config) -> bool:
-    if job.source in TITLE_ONLY_SOURCES:
-        base = job.title.lower()
-    else:
-        base = job.match_text()
-    full = base + (" " + job.description.lower() if _scans_body(job.source) else "")
-
-    # Exclude scans the body ONLY for aggregator/HN sources (keeps the "unity catalog"
-    # Databricks guard). For studios/ATS the exclude stays on title+tags, so JD boilerplate
-    # like "report to the Principal Engineer" / "10+ years preferred" can't drop a real role.
-    excl_text = full if job.source in BODY_MATCH_SOURCES else base
-    if _hit(tuple(cfg.exclude), excl_text):
+    """Strict Unity-developer match: the TITLE must name a Unity keyword AND a developer
+    role term. Deliberately title-only (no description, no tags) — a studio JD almost always
+    mentions Unity, and tags are noisy, so both produce false positives like "UX Designer"
+    or "Data Engineer" at a Unity studio. Title-only keeps real "Unity Developer" roles.
+    """
+    title = job.title.lower()
+    if _hit(tuple(cfg.exclude), title):
         return False
-    return _hit(tuple(cfg.keywords), full)
+    if not _hit(tuple(cfg.keywords), title):       # unity / unity3d (+ phrases)
+        return False
+    return _hit(tuple(cfg.role_terms), title)      # developer / engineer / programmer / ...
 
 
 # Boards that ONLY list remote jobs — every result is remote by definition, even if

@@ -9,6 +9,10 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "config.yaml"
 
+# A job's TITLE must name one of these role types (alongside a Unity keyword) to count as a
+# Unity *developer* role. Tunable via config.yaml `role_terms`.
+DEFAULT_ROLE_TERMS = ["developer", "engineer", "programmer", "dev", "coder"]
+
 # Load secrets from a local .env for local runs. No-op when the file is absent
 # (e.g. GitHub Actions, where secrets arrive as real env vars), and never
 # overrides values already set in the environment.
@@ -24,6 +28,7 @@ class Config:
     def __init__(self, data: dict):
         self.keywords = [k.lower() for k in data.get("keywords", [])]
         self.exclude = [k.lower() for k in data.get("exclude", [])]
+        self.role_terms = [t.lower() for t in (data.get("role_terms") or DEFAULT_ROLE_TERMS)]
         self.remoteok_tags = data.get("remoteok_tags", [])
         studios = data.get("studios") or {}
         self.greenhouse = studios.get("greenhouse") or []
