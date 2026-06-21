@@ -1,5 +1,9 @@
 """Source parsers: raw API payload -> Job mapping (offline, get_json monkeypatched)."""
+import types
+
+from jobbot import sources
 from jobbot.config import Config
+from jobbot.schedule import SourceState
 from jobbot.sources import greenhouse, hackernews, remoteok
 
 
@@ -59,6 +63,18 @@ def test_greenhouse_strips_html_and_tags_company(monkeypatch):
     assert j.company == "riotgames"
     assert j.source == "Greenhouse/riotgames"
     assert "<" not in j.description and "Unity" in j.description
+
+
+def test_collect_all_captures_generic_source_errors(monkeypatch):
+    def boom(cfg):
+        raise RuntimeError("403 quota exceeded")
+
+    mod = types.SimpleNamespace(__name__="jobbot.sources.adzuna", fetch=boom)
+    monkeypatch.setattr(sources, "_GENERIC", [mod])
+    jobs, errors = sources.collect_all(Config({}), SourceState())
+    assert jobs == []
+    assert len(errors) == 1
+    assert "adzuna" in errors[0] and "403 quota exceeded" in errors[0]
 
 
 def test_hackernews_picks_thread_and_comments(monkeypatch):

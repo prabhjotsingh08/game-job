@@ -25,6 +25,19 @@ def _format(job: Job) -> str:
     )
 
 
+def send_notice(token: str, chat_id: str, text: str) -> None:
+    """Send a one-line status notice (e.g. a source failure). Best-effort; never raises."""
+    try:
+        requests.post(
+            API.format(token=token),
+            json={"chat_id": chat_id, "text": text[:4000],
+                  "disable_web_page_preview": True},
+            timeout=15,
+        )
+    except requests.RequestException as e:
+        print(f"  ! Telegram notice error: {e}")
+
+
 def send_jobs(jobs: list[Job], token: str, chat_id: str) -> list[Job]:
     """Send each job as its own message. Returns the jobs successfully delivered."""
     if not token or not chat_id:

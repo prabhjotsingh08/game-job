@@ -36,7 +36,7 @@ def main() -> None:
     source_state = SourceState()
 
     print("Collecting jobs...")
-    all_jobs = collect_all(cfg, source_state)
+    all_jobs, source_errors = collect_all(cfg, source_state)
     print(f"Total fetched: {len(all_jobs)}")
 
     # Filter, then dedup within this run and against the seen store.
@@ -85,6 +85,19 @@ def main() -> None:
             done = discord.send_jobs(fresh, cfg.discord_webhook)
             print(f"Discord: sent {len(done)}/{len(fresh)}")
             delivered_uids.update(j.uid for j in done)
+
+    # Heads-up if any source failed (e.g. an exhausted Adzuna/Jooble key) — otherwise the
+    # failure is buried in the Actions log. Sent to the feed channels (not WhatsApp, which
+    # is rate-limited for personal low-volume use).
+    if source_errors:
+        notice = "⚠️ job-alerts: {n} source(s) failed this run:\n{body}".format(
+            n=len(source_errors), body="\n".join(source_errors)
+        )
+        print(notice)
+        if cfg.discord_enabled:
+            discord.send_notice(cfg.discord_webhook, notice)
+        if cfg.telegram_enabled:
+            telegram.send_notice(cfg.telegram_token, cfg.telegram_chat_id, notice)
 
     for job in fresh:
         if job.uid in delivered_uids:

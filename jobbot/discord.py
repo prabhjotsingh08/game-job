@@ -34,6 +34,14 @@ def _embed(job: Job) -> dict:
     return embed
 
 
+def send_notice(webhook_url: str, text: str) -> None:
+    """Post a one-line status notice (e.g. a source failure). Best-effort; never raises."""
+    try:
+        requests.post(webhook_url, json={"content": text[:1900]}, timeout=15)
+    except requests.RequestException as e:
+        print(f"  ! Discord notice error: {e}")
+
+
 def send_jobs(jobs: list[Job], webhook_url: str) -> list[Job]:
     """Post jobs as batched embeds. Returns the jobs successfully delivered.
 
