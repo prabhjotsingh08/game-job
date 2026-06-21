@@ -37,13 +37,6 @@ BODY_MATCH_SOURCES = {"HackerNews", "Adzuna", "Jooble"}
 # check), but NOT for excludes (see matches()), so JD boilerplate can't false-drop a role.
 STUDIO_FAMILIES = {"Greenhouse", "Lever", "Ashby", "Recruitee", "Workable"}
 
-# Sources whose API query already guarantees Unity relevance (queried literally for
-# "unity developer"). For these the title need NOT contain the word "unity" — only a
-# developer role term — which recovers real roles titled e.g. "Game Developer". Every other
-# source still requires "unity" in the title.
-UNITY_PREFILTERED_SOURCES = {"Adzuna", "Jooble"}
-
-
 def _family(source: str) -> str:
     return source.split("/", 1)[0]
 
@@ -63,11 +56,9 @@ def matches(job: Job, cfg: Config) -> bool:
     title = job.title.lower()
     if _hit(tuple(cfg.exclude), title):
         return False
-    if not _hit(tuple(cfg.role_terms), title):     # must be a developer/engineer role
+    if not _hit(tuple(cfg.keywords), title):       # title must name Unity
         return False
-    if job.source in UNITY_PREFILTERED_SOURCES:    # API already filtered to "unity developer"
-        return True
-    return _hit(tuple(cfg.keywords), title)        # else the title must name Unity
+    return _hit(tuple(cfg.role_terms), title)      # AND be a developer/engineer role
 
 
 # Boards that ONLY list remote jobs — every result is remote by definition, even if

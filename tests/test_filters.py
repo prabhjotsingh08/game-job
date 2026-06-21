@@ -86,19 +86,12 @@ def test_unity_engineer_and_unity3d_programmer_match():
         assert matches(job, _cfg()), t
 
 
-def test_prefiltered_source_needs_only_dev_role():
-    # Adzuna/Jooble are queried "unity developer" -> title needs only a dev term, not "unity".
-    ad = Job(title="Game Developer", company="x", url="", source="Adzuna")
-    assert matches(ad, _cfg())
-    # Same title from a generic source still requires "unity" in the title -> dropped.
-    ok = Job(title="Game Developer", company="x", url="", source="RemoteOK")
-    assert not matches(ok, _cfg())
-
-
-def test_prefiltered_source_still_needs_dev_role_and_exclude():
-    # A non-dev role from a prefiltered source is still dropped.
-    artist = Job(title="Concept Artist", company="x", url="", source="Adzuna")
-    assert not matches(artist, _cfg())
+def test_aggregator_still_requires_unity_in_title():
+    # Adzuna/Jooble full-text "unity developer" search is loose (returns Java/backend roles),
+    # so we DON'T trust it: the title must still name Unity, like every other source.
+    assert matches(Job(title="Senior Unity Developer", company="x", url="", source="Adzuna"), _cfg())
+    for t in ("Game Developer", "Java Backend Engineer", "OnBase Developer"):
+        assert not matches(Job(title=t, company="x", url="", source="Jooble"), _cfg()), t
 
 
 def test_studio_remote_from_description():
