@@ -71,6 +71,13 @@ studios:
     - housemarque       # 1  (added 2026-06-17, Returnal)
     - metacore          # 0 open (added 2026-06-18, Merge Mansion)
     - pocketgems        # 0 open (added 2026-06-18, mobile games)
+    # 2026-06-21: AAA studios (verified live). Mostly Unreal/proprietary engines, so few
+    # Unity-titled roles, but kept for the occasional remote Unity post. NOTE: 'unity3d'
+    # (Unity Technologies' own board) was intentionally NOT added — it surfaces Unity-company
+    # internal tooling devs (Ads dashboards, Package Manager), not game Unity-developer roles.
+    - 2k                 # 156 (2K Games/Sports)
+    - cloudchamberen     # 24  (BioShock)
+    - hangar13           # 15  (Mafia)
   lever:
     - dreamgames        # 18
     - kabam             # 15
