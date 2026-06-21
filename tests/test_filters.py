@@ -86,6 +86,21 @@ def test_unity_engineer_and_unity3d_programmer_match():
         assert matches(job, _cfg()), t
 
 
+def test_prefiltered_source_needs_only_dev_role():
+    # Adzuna/Jooble are queried "unity developer" -> title needs only a dev term, not "unity".
+    ad = Job(title="Game Developer", company="x", url="", source="Adzuna")
+    assert matches(ad, _cfg())
+    # Same title from a generic source still requires "unity" in the title -> dropped.
+    ok = Job(title="Game Developer", company="x", url="", source="RemoteOK")
+    assert not matches(ok, _cfg())
+
+
+def test_prefiltered_source_still_needs_dev_role_and_exclude():
+    # A non-dev role from a prefiltered source is still dropped.
+    artist = Job(title="Concept Artist", company="x", url="", source="Adzuna")
+    assert not matches(artist, _cfg())
+
+
 def test_studio_remote_from_description():
     # Onsite-looking title/location, but JD says remote -> is_remote True for studios.
     job = Job(title="Unity Developer", company="acme", url="", source="Ashby/acme",

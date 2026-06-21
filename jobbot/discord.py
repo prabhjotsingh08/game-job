@@ -22,13 +22,16 @@ COLOR = 0x00B4D8  # Unity-ish cyan
 
 def _embed(job: Job) -> dict:
     loc = f" · {job.location}" if job.location else ""
-    return {
+    embed = {
         "title": job.title[:256] or "(untitled role)",
-        "url": job.url,
         "description": f"🏢 {job.company}{loc}"[:4096],
         "color": COLOR,
         "footer": {"text": f"via {job.source}"},
     }
+    # Discord rejects the whole batch (400) on an empty/invalid embed url; only set it when present.
+    if job.url:
+        embed["url"] = job.url
+    return embed
 
 
 def send_jobs(jobs: list[Job], webhook_url: str) -> list[Job]:

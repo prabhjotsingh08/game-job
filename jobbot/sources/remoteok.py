@@ -15,6 +15,10 @@ from ._http import get_json
 URL = "https://remoteok.com/api"
 TAG_URL = "https://remoteok.com/api?tags={tag}"
 
+# Generic feed + one query per tag = several requests; RemoteOK rate-limits hard
+# (Cloudflare 429). Self-gate to every 3h so we don't get the IP blocked.
+MIN_INTERVAL_HOURS = 3
+
 
 def _rows_to_jobs(data, jobs: list[Job], seen: set[str]) -> None:
     # First element is a legal/metadata notice; skip non-dict / metadata rows.

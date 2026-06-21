@@ -26,12 +26,3 @@ class Job:
         """
         norm = " ".join(f"{self.title} {self.company}".lower().split())
         return hashlib.sha1(norm.encode("utf-8")).hexdigest()[:16]
-
-    def match_text(self) -> str:
-        """Text used for keyword/exclude matching.
-
-        Deliberately excludes the free-text description: real game roles name the
-        tech in the title or tags, while descriptions say things like "we value
-        unity" that produce false positives.
-        """
-        return " ".join([self.title, self.company, " ".join(self.tags)]).lower()

@@ -15,10 +15,3 @@ def test_uid_distinct_titles_differ():
     assert a.uid != b.uid
 
 
-def test_match_text_excludes_description():
-    job = Job(title="Backend Engineer", company="Acme", url="", source="s",
-              tags=["python"], description="we value unity here")
-    text = job.match_text()
-    assert "unity" not in text
-    assert "backend engineer" in text
-    assert "python" in text

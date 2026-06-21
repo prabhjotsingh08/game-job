@@ -25,10 +25,11 @@ DELAY_SECONDS = 6
 def _format(job: Job) -> str:
     # WhatsApp markup: *bold*, _italic_. Plain URLs auto-link.
     loc = f" · {job.location}" if job.location else ""
+    link = f"🔗 Apply: {job.url}\n" if job.url else ""
     return (
         f"🎮 *{job.title}*\n"
         f"🏢 {job.company}{loc}\n"
-        f"🔗 Apply: {job.url}\n"
+        f"{link}"
         f"_via {job.source}_"
     )
 

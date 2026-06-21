@@ -16,10 +16,11 @@ def _format(job: Job) -> str:
     company = html.escape(job.company)
     loc = f" · {html.escape(job.location)}" if job.location else ""
     src = html.escape(job.source)
+    link = f"🔗 <a href=\"{html.escape(job.url)}\">Apply</a>\n" if job.url else ""
     return (
         f"🎮 <b>{title}</b>\n"
         f"🏢 {company}{loc}\n"
-        f"🔗 <a href=\"{html.escape(job.url)}\">Apply</a>\n"
+        f"{link}"
         f"<i>via {src}</i>"
     )
 
